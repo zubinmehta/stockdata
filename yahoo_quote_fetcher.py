@@ -2,10 +2,10 @@
 # coding: utf-8
 
 import requests
-from bs4 import BeautifulSoup
-import re
+#from bs4 import BeautifulSoup
+#import re
 import redis
-import gevent
+#import gevent
 from gevent import monkey
 import pandas
 from gevent.pool import Pool
@@ -40,7 +40,14 @@ df = eqs.ix[eqs.ix[:, 2] == "EQ"]
 
 def fetch_yahoo(yahoo_stock_name, folder="ynse"):
     print yahoo_stock_name
-    url = "http://ichart.finance.yahoo.com/table.csv?s=%s&a=01&b=12&c=1992&d=04&e=27&f=2012&g=d&ignore=.csv" %yahoo_stock_name
+    start_day = 20
+    start_month = 5
+    start_year = 2013
+    end_day = 24
+    end_month = 5
+    end_year = 2014
+    url = "http://ichart.finance.yahoo.com/table.csv?s=%s&a=%s&b=%s&c=%s&d=%s&e=%s&f=%s&g=d&ignore=.csv" \
+        % (yahoo_stock_name, start_month-1, start_day, start_year, end_month-1, end_day, end_year)
     print url
     f = open("%s/%s" %(folder, yahoo_stock_name), "wb+")
     f.write(requests.get(url).content)
@@ -48,5 +55,10 @@ def fetch_yahoo(yahoo_stock_name, folder="ynse"):
 
 if __name__ == "__main__":
     pool = Pool(10)
-    jobs = [pool.spawn(fetch_yahoo, "%s.NS" %j[0:9]) for j in df.SYMBOL]
+    only_stocks = df.SYMBOL
+
+    only_stocks = ["SBIN"]
+
+    jobs = [pool.spawn(fetch_yahoo, "%s.NS" %j[0:9]) for j in only_stocks]
     pool.join()
+
