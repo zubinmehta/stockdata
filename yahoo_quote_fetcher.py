@@ -2,12 +2,12 @@
 # coding: utf-8
 
 import requests
-#from bs4 import BeautifulSoup
-#import re
+# from bs4 import BeautifulSoup
+# import re
 import redis
-#import gevent
+# import gevent
 from gevent import monkey
-import pandas
+# import pandas
 from gevent.pool import Pool
 
 r = redis.Redis(db=2)
@@ -31,34 +31,40 @@ jobs = [gevent.spawn(do_stuff, url_template %(i*20)) for i in range(20) ]
 gevent.joinall(jobs)
 """
 
-eqs = pandas.read_csv("eqs.csv")
-df = eqs.ix[eqs.ix[:, 2] == "EQ"]
+# eqs = pandas.read_csv("eqs.csv")
+# df = eqs.ix[eqs.ix[:, 2] == "EQ"]
+
+# STOCKS = tuple(open('eqnames.csv', 'r'))
+STOCKS = open('eqnames.csv').read().split('\n')
+print(STOCKS)
 
 # 1. get the list of equities from the nse website csv link
 # 2. create the 9 + .NS name to query yahoo
 # 3. write the data querier and saver for 1 yahoo stock
 
+
 def fetch_yahoo(yahoo_stock_name, folder="ynse"):
-    print yahoo_stock_name
+    print(yahoo_stock_name)
     start_day = 20
     start_month = 5
-    start_year = 2013
-    end_day = 24
+    start_year = 1985
+    end_day = 18
     end_month = 5
-    end_year = 2014
+    end_year = 2016
     url = "http://ichart.finance.yahoo.com/table.csv?s=%s&a=%s&b=%s&c=%s&d=%s&e=%s&f=%s&g=d&ignore=.csv" \
         % (yahoo_stock_name, start_month-1, start_day, start_year, end_month-1, end_day, end_year)
-    print url
-    f = open("%s/%s" %(folder, yahoo_stock_name), "wb+")
+    print(url)
+    f = open("%s/%s" % (folder, yahoo_stock_name), "wb+")
     f.write(requests.get(url).content)
     f.close()
 
 if __name__ == "__main__":
     pool = Pool(10)
-    only_stocks = df.SYMBOL
+    # only_stocks = df.SYMBOL
 
-    only_stocks = ["SBIN"]
+    only_stocks = STOCKS
+    # only_stocks = ["SBIN"]
+    # only_stocks = ["GHCL"]
 
-    jobs = [pool.spawn(fetch_yahoo, "%s.NS" %j[0:9]) for j in only_stocks]
+    jobs = [pool.spawn(fetch_yahoo, "%s.NS" % j[0:9]) for j in only_stocks]
     pool.join()
-
